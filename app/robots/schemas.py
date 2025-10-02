@@ -3,6 +3,8 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 from decimal import Decimal
 
+from app.company.schemas import CompanyResponse
+
 
 # ==================== RobotImage Schemas ====================
 
@@ -108,6 +110,7 @@ class RobotResponse(RobotBase):
     created_at: datetime
     updated_at: datetime
     images: List[RobotImageResponse] = []
+    company: CompanyResponse
     
     model_config = ConfigDict(from_attributes=True)
 

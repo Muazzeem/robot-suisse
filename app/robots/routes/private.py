@@ -1,7 +1,9 @@
 import uuid
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
+from fastapi import HTTPException, status
+
 from app.db.database import get_db
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.company.models import slugify, generate_unique_slug
 
@@ -19,3 +21,33 @@ def create_robot(robot_in: RobotCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_robot)
     return db_robot
+
+@router.get("/{slug}", response_model=RobotResponse)
+def get_robot(slug: str, db: Session = Depends(get_db)):
+    robot = (
+        db.query(Robot)
+        .options(
+            joinedload(Robot.images),
+            joinedload(Robot.company)
+        )
+        .filter(Robot.slug == slug)
+        .first()
+    )
+    if not robot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Robot not found"
+        )
+    return robot
+
+@router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_robot(slug: str, db: Session = Depends(get_db)):
+    robot = db.query(Robot).filter(Robot.slug == slug).first()
+    if not robot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Robot not found"
+        )
+    db.delete(robot)
+    db.commit()
+    return None
