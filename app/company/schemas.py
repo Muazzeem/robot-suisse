@@ -34,7 +34,9 @@ class CompanyUpdate(BaseModel):
     is_active: Optional[bool] = None
 
 class CompanyResponse(CompanyBase):
-    slug: Optional[str]
+    slug: str
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
