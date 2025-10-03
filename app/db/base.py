@@ -22,6 +22,7 @@ def import_models():
     """
     from app.company.models import Company  # noqa: F401
     from app.robots.models import Robot, RobotImage  # noqa: F401
+    from app.auth.models import User  # noqa: F401
 
 
 import_models()
