@@ -26,11 +26,6 @@ def import_models():
     # Company + related models
     from app.company.models import (
         Company,
-        CompanyTranslation,
-        CompanySocial,
-        CompanyLocation,
-        CompanyIndustry,
-        CompanyCertification,
     )  # noqa: F401
 
     # Robots
