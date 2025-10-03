@@ -16,7 +16,7 @@ def create_company(company: CompanyCreate, db: Session = Depends(get_db)):
     if data.get("website"):
         data["website"] = str(data["website"])
 
-    data["slug"] = generate_unique_slug(db, data["name"])
+    data["slug"] = generate_unique_slug(db, data["name"], model_class=Company)
 
     db_company = Company(**data)
     db.add(db_company)
@@ -26,18 +26,20 @@ def create_company(company: CompanyCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/", response_model=PaginatedCompanyResponse)
-def list_companies(
+def list_active_companies(
     page: int = Query(1, ge=1),
     size: int = Query(10, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    total = db.query(Company).count()
+    query = db.query(Company).filter(Company.is_active == True)
+    total = query.count()
     items = (
-        db.query(Company)
+        query
         .offset((page - 1) * size)
         .limit(size)
         .all()
     )
+
     return {
         "total": total,
         "page": page,
