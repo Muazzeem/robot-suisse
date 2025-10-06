@@ -17,10 +17,10 @@ dev-build:
   stage: build
   script:
     - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin registry.gitlab.com
-    - docker build -f ./server/Dockerfile-dev . -t service-template:dev
-    - docker tag service-template:dev registry.gitlab.com/vemate/leadgen/service-template:dev
-    - docker push registry.gitlab.com/vemate/leadgen/service-template:dev
-    - docker rmi registry.gitlab.com/vemate/leadgen/service-template:dev
+    - docker build -f ./server/Dockerfile-dev . -t robot-suisse:dev
+    - docker tag robot-suisse:dev registry.gitlab.com/vemate/leadgen/robot-suisse:dev
+    - docker push registry.gitlab.com/vemate/leadgen/robot-suisse:dev
+    - docker rmi registry.gitlab.com/vemate/leadgen/robot-suisse:dev
   tags:
     - docker
     - build
@@ -32,10 +32,10 @@ production-build:
   stage: build
   script:
     - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin registry.gitlab.com
-    - docker build -f ./server/Dockerfile-prod . -t service-template:prod
-    - docker tag service-template:prod registry.gitlab.com/vemate/leadgen/service-template:prod
-    - docker push registry.gitlab.com/vemate/leadgen/service-template:prod
-    - docker rmi registry.gitlab.com/vemate/leadgen/service-template:prod
+    - docker build -f ./server/Dockerfile-prod . -t robot-suisse:prod
+    - docker tag robot-suisse:prod registry.gitlab.com/vemate/leadgen/robot-suisse:prod
+    - docker push registry.gitlab.com/vemate/leadgen/robot-suisse:prod
+    - docker rmi registry.gitlab.com/vemate/leadgen/robot-suisse:prod
   tags:
     - docker
     - build
