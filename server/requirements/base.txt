@@ -1,0 +1,9 @@
+Django==5.2.4
+wagtail==7.0.1
+psycopg2-binary==2.9.10
+python-decouple==3.8
+django-extensions==4.1
+ipython==9.4.0
+djangorestframework==3.16.0
+django-cors-headers==4.7.0
+djlint==1.36.4

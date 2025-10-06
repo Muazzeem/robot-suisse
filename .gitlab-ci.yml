@@ -1,0 +1,66 @@
+# variables:
+  # GIT_SUBMODULE_STRATEGY: recursive
+
+stages:
+  - build
+  - test
+  - deploy
+
+before_script:
+  - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin registry.gitlab.com
+  - sudo chown -R gitlab-runner:gitlab-runner .
+
+after_script:
+  - sudo chown -R gitlab-runner:gitlab-runner .
+
+dev-build:
+  stage: build
+  script:
+    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin registry.gitlab.com
+    - docker build -f ./server/Dockerfile-dev . -t service-template:dev
+    - docker tag service-template:dev registry.gitlab.com/vemate/leadgen/service-template:dev
+    - docker push registry.gitlab.com/vemate/leadgen/service-template:dev
+    - docker rmi registry.gitlab.com/vemate/leadgen/service-template:dev
+  tags:
+    - docker
+    - build
+  only:
+    refs:
+      - main
+
+production-build:
+  stage: build
+  script:
+    - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin registry.gitlab.com
+    - docker build -f ./server/Dockerfile-prod . -t service-template:prod
+    - docker tag service-template:prod registry.gitlab.com/vemate/leadgen/service-template:prod
+    - docker push registry.gitlab.com/vemate/leadgen/service-template:prod
+    - docker rmi registry.gitlab.com/vemate/leadgen/service-template:prod
+  tags:
+    - docker
+    - build
+  only:
+    refs:
+      - stable
+
+
+production-deploy:
+  stage: deploy
+  before_script:
+    - mkdir -p ~/.ssh
+    - cp -rv $PRODUCTION_SSH_KEY ~/.ssh/id_rsa_vemate_backend
+    - chmod 600 ~/.ssh/id_rsa_vemate_backend
+    - eval "$(ssh-agent -s)"
+    - ssh-add ~/.ssh/id_rsa_vemate_backend
+    - ssh-keyscan -H $PRODUCTION_SERVER_IP >> ~/.ssh/known_hosts
+  script:
+    - scp -r prod.yml root@$PRODUCTION_SERVER_IP:/www/service_web/breakdownrecoveryservice/docker-compose.yml
+    - ssh root@$PRODUCTION_SERVER_IP "export COMPOSE_INTERACTIVE_NO_CLI=1 && cd /www/service_web/breakdownrecoveryservice && docker compose pull && docker compose down && docker compose up -d && docker compose exec -T server python manage.py migrate && docker compose exec -T server python manage.py collectstatic --noinput; export COMPOSE_INTERACTIVE_NO_CLI=0"
+  tags:
+    - docker
+    - build
+  only:
+    refs:
+      - stable
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /deploy/
