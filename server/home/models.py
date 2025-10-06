@@ -1,51 +1,53 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from core.models import BasePage
 from wagtail.models import Page
 from wagtail.admin.panels import (
     FieldPanel,
     MultiFieldPanel,
 )
 from wagtail.fields import StreamField
+from wagtail.fields import RichTextField
+from wagtail.api import APIField
 
-from .choices import ROBOTS_CHOICES
+from .fields import ImageRenditionField, ImageSerializerField
 from .forms import *
 from . import blocks
 
 
-class BasePage(Page):
-    og_image = models.ForeignKey(
+class Author(models.Model):
+    name = models.CharField(_("Name"), max_length=250)
+    image = models.ForeignKey(
         "wagtailimages.Image",
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
     )
-    og_keywords = models.CharField(
-        _("Og keywords"), max_length=550, null=True, blank=True
-    )
-    robots_directive = models.CharField(
-        max_length=20,
-        choices=ROBOTS_CHOICES,
-        default="index, follow",
-        help_text="Meta robots tag for SEO",
-    )
 
-    promote_panels = Page.promote_panels + [
-        FieldPanel("og_image", help_text="size: width-1200px, height-630px"),
-        FieldPanel("og_keywords"),
-        FieldPanel("robots_directive"),
+    panels = [
+        MultiFieldPanel(
+            [
+                FieldPanel("name"),
+                FieldPanel("image"),
+            ],
+            heading="Basic",
+        )
     ]
 
-    class Meta:
-        abstract = True
+    def __str__(self):
+        return self.name
 
 
 class HomePage(BasePage):
     template = "home/home.html"
 
     parent_page_types = []
-    subpage_types = ["ContactPage", "ServiceListPage", "ServicePage", "AboutUsPage", "PrivacyPage", "TermsPage", "RegistrationPage"]
+    subpage_types = [
+        "ContactPage", "BlogIndexPage", "PublicPage", 
+        "company.CompanyIndexPage", "robot.RobotIndexPage"
+    ]
 
 
 class ContactPage(BasePage):
@@ -55,93 +57,198 @@ class ContactPage(BasePage):
     subpage_types = []
 
 
-class ServicePage(BasePage):
-    template = "home/services.html"
+class PublicPage(BasePage):
+    cover_image = models.ForeignKey(
+        "wagtailimages.Image",
+        related_name="+",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("Cover Image"),
+        help_text=_("Cover image for the service detail page"),
+    )
+
+    body = StreamField(
+        blocks.COMMON_BLOCKS,
+        use_json_field=True,
+        null=True,
+        blank=True,
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("cover_image"),
+        MultiFieldPanel([FieldPanel("body")], heading="Body Content"),
+    ]
+
+    parent_page_types = ["home.HomePage"]  # ensure correct app label
+    subpage_types = []
+
+    class Meta:
+        verbose_name = "Public Page"
+        verbose_name_plural = "Public Pages"
+
+
+
+class BlogIndexPage(BasePage):
+    title_ar = models.CharField(_("Title ar"), max_length=250, null=True, blank=True)
+    hero_title = models.CharField(
+        _("Hero title"), max_length=250, null=True, blank=True
+    )
+    hero_title_ar = models.CharField(
+        _("Hero title ar"), max_length=250, null=True, blank=True
+    )
+    hero_subtitle = models.CharField(
+        _("Hero subtitle"), max_length=250, null=True, blank=True
+    )
+    hero_subtitle_ar = models.CharField(
+        _("Hero subtitle ar"), max_length=250, null=True, blank=True
+    )
+
+    @property
+    def categories(self):
+        from .serializers import BlogCategoryPageSerializer
+
+        childs = self.get_children()
+        return BlogCategoryPageSerializer(childs, many=True).data
+
+    content_panels = Page.content_panels + [
+        FieldPanel("title_ar"),
+        FieldPanel("hero_title"),
+        FieldPanel("hero_title_ar"),
+        FieldPanel("hero_subtitle"),
+        FieldPanel("hero_subtitle_ar"),
+    ]
+
+    api_fields = BasePage.api_fields + [
+        APIField("title"),
+        APIField("title_ar"),
+        APIField("categories"),
+        APIField("hero_title"),
+        APIField("hero_title_ar"),
+        APIField("hero_subtitle"),
+        APIField("hero_subtitle_ar"),
+    ]
 
     parent_page_types = ["HomePage"]
     subpage_types = [
-        "ServiceDetailPage",
+        "BlogCategoryPage",
     ]
 
 
-class ServiceDetailPage(BasePage):
-    template = "home/service_detail.html"
+class BlogCategoryPage(BasePage):
+    title_ar = models.CharField(_("Title ar"), max_length=250, null=True, blank=True)
 
-    cover_image = models.ForeignKey(
+    content_panels = Page.content_panels + [
+        FieldPanel("title_ar"),
+    ]
+
+    api_fields = BasePage.api_fields + [APIField("title"), APIField("title_ar")]
+
+    parent_page_types = [
+        "BlogIndexPage",
+    ]
+    subpage_types = [
+        "BlogDetailPage",
+    ]
+
+
+from rest_framework import serializers
+
+class AuthorSerializer(serializers.ModelSerializer):
+    image = ImageSerializerField()
+
+    class Meta:
+        model = Author
+        fields = "__all__"
+
+
+class BlogDetailPage(BasePage):
+    title_ar = models.CharField(_("Title ar"), max_length=250, null=True, blank=True)
+    thumbnail = models.ForeignKey(
         "wagtailimages.Image",
-        related_name="+",
-        on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name=_("Cover Image"),
-        help_text=_("Cover image for the service detail page")
+        on_delete=models.SET_NULL,
+        related_name="+",
     )
 
     body = StreamField(
         [
-            ("banner_block", blocks.BannerBlock()),
-            ("richtext_block", blocks.RichtextBlock()),
-            ("two_image_block", blocks.TwoImageBlock()),
-            ("faq_block", blocks.FaqBlock()),
+            ("title", blocks.TitleBlock()),
         ],
         null=True,
         blank=True,
         use_json_field=True,
     )
 
-    content_panels = Page.content_panels + [
-        FieldPanel("cover_image"),
-        MultiFieldPanel([FieldPanel("body")], heading="Body"),
-    ]
-
-    parent_page_types = ["ServicePage"]
-    subpage_types = []
-
-
-class AboutUsPage(BasePage):
-    template = "home/about_us.html"
-
-    parent_page_types = ["HomePage"]
-    subpage_types = []
-
-
-class PublicPage(BasePage):
-    template = "home/public.html"
-
-    cover_image = models.ForeignKey(
-        "wagtailimages.Image",
-        related_name="+",
+    author = models.ForeignKey(
+        "Author",
+        verbose_name=_("Author"),
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name=_("Cover Image"),
-        help_text=_("Cover image for the service detail page")
+    )
+    is_featured = models.BooleanField(_("Featured blog"), default=False)
+    tags = models.CharField(
+        _("Tags: Comma separated"), max_length=250, null=True, blank=True
+    )
+    short_description = models.TextField(_("Short description"), null=True, blank=True)
+    short_description_ar = models.TextField(
+        _("Short description ar"), null=True, blank=True
     )
 
-    body = StreamField(
-        [
-            ("banner_block", blocks.BannerBlock()),
-            ("richtext_block", blocks.RichtextBlock()),
-            ("two_image_block", blocks.TwoImageBlock()),
-            ("faq_block", blocks.FaqBlock()),
-        ],
-        null=True,
-        blank=True,
-        use_json_field=True,
-    )
-
+    @property
+    def fetch_parent(self):
+        obj = self.get_parent()
+        return {
+            "id": obj.specific.id,
+            "title": obj.specific.title,
+            "title_ar": obj.specific.title_ar,
+            "slug": obj.specific.slug,
+        }
+    
     content_panels = Page.content_panels + [
-        FieldPanel("cover_image"),
+        FieldPanel("title_ar"),
+        MultiFieldPanel(
+            [
+                FieldPanel("short_description"),
+                FieldPanel("short_description_ar"),
+                FieldPanel("is_featured"),
+                FieldPanel("tags"),
+                FieldPanel("thumbnail", help_text="252x372 pixel"),
+            ],
+            heading="Header",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("author"),
+            ],
+            heading="Author",
+        ),
         MultiFieldPanel([FieldPanel("body")], heading="Body"),
     ]
+    api_fields = BasePage.api_fields + [
+        APIField("title"),
+        APIField("title_ar"),
+        APIField("short_description"),
+        APIField("short_description_ar"),
+        APIField(
+            "thumbnail",
+            serializer=ImageRenditionField(
+                {"original": "original|jpegquality-80|format-webp"}
+            ),
+        ),
+        APIField("author", serializer=AuthorSerializer()),
+        APIField("last_published_at"),
+        APIField("body"),
+        APIField("tags"),
+        APIField("is_featured"),
+        APIField("fetch_parent"),
+    ]
 
-    parent_page_types = ["HomePage"]
+    parent_page_types = [
+        "home.BlogCategoryPage",
+    ]
     subpage_types = []
-
-
-class RegistrationPage(Page):
-    template = "home/service-registration.html"
-
-    parent_page_types = ["HomePage"]
-    subpage_types = []
+    
 

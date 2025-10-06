@@ -1,16 +1,16 @@
 services:
   db:
     image: postgres:16
-    container_name: template_db
+    container_name: robot_suisse_db
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
       - POSTGRES_DB=db
     volumes:
-      - service-template:/var/lib/postgresql/data
+      - robot-suisse:/var/lib/postgresql/data
 
   server:
-    container_name: template_server
-    image: registry.gitlab.com/vemate/leadgen/service-template:latest
+    container_name: robot_suisse_server
+    image: registry.gitlab.com/vemate/leadgen/robot-suisse:latest
     environment:
       - DJANGO_SETTINGS_MODULE=leadgen.settings.dev
     command: python manage.py runserver 0.0.0.0:8000
@@ -23,4 +23,4 @@ services:
 
 
 volumes:
-  service-template:
+  robot-suisse:

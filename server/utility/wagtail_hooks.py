@@ -60,23 +60,3 @@ class MenuViewSetGroup(SnippetViewSetGroup):
 
 register_snippet(MenuViewSetGroup)
 
-
-class ServiceAdmin(SnippetViewSet):
-    model = Service
-    menu_label = "Services"
-    icon = "folder"
-    menu_order = 100
-    add_to_settings_menu = False
-    exclude_from_explorer = False
-    list_display = ("title", "detail_page_link")
-    search_fields = ("title",)
-
-
-class ServiceViewSetGroup(SnippetViewSetGroup):
-    items = (ServiceAdmin,)
-    menu_icon = "folder"
-    menu_label = "Services"
-    menu_name = "Services"
-
-
-register_snippet(ServiceViewSetGroup)
