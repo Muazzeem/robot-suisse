@@ -1,16 +1,17 @@
 from wagtail import blocks
 from wagtail.images.blocks import ImageChooserBlock
 
-
 class TitleBlock(blocks.StructBlock):
     title_en = blocks.CharBlock(required=True, help_text="Main title for the banner")
-    title_de_ch = blocks.CharBlock(required=True, help_text="Main title for the banner", blank=True, null=True)
-    title_fr_ch = blocks.CharBlock(required=True, help_text="Main title for the banner", blank=True, null=True)
-    title_it_ch = blocks.CharBlock(required=True, help_text="Main title for the banner", blank=True, null=True)
+    title_de_ch = blocks.CharBlock(required=False, help_text="German title (Switzerland)")
+    title_fr_ch = blocks.CharBlock(required=False, help_text="French title (Switzerland)")
+    title_it_ch = blocks.CharBlock(required=False, help_text="Italian title (Switzerland)")
+
     subtitle_en = blocks.TextBlock(required=False, help_text="Optional subtitle or tagline")
-    subtitle_de_ch = blocks.TextBlock(required=False, help_text="Optional subtitle or tagline", blank=True, null=True)
-    subtitle_fr_ch = blocks.TextBlock(required=False, help_text="Optional subtitle or tagline", blank=True, null=True)
-    subtitle_it_ch = blocks.TextBlock(required=False, help_text="Optional subtitle or tagline", blank=True, null=True)
+    subtitle_de_ch = blocks.TextBlock(required=False, help_text="Optional subtitle (German)")
+    subtitle_fr_ch = blocks.TextBlock(required=False, help_text="Optional subtitle (French)")
+    subtitle_it_ch = blocks.TextBlock(required=False, help_text="Optional subtitle (Italian)")
+
     alignment = blocks.ChoiceBlock(
         choices=[
             ("left", "Left"),
@@ -25,13 +26,13 @@ class TitleBlock(blocks.StructBlock):
     class Meta:
         icon = "title"
         label = "Title Block"
-        template = None
+
 
 class BannerImageBlock(blocks.StructBlock):
     image = ImageChooserBlock(required=False, help_text="Upload an image for the banner")
 
     class Meta:
-        icon = "media"
+        icon = "image"
         label = "Banner Image Block"
 
 
@@ -45,23 +46,23 @@ class BannerVideoBlock(blocks.StructBlock):
 
 class TwoImageBlock(blocks.StructBlock):
     title1_en = blocks.CharBlock(required=False, help_text="Title for the first image")
-    title1_de_ch = blocks.CharBlock(required=False, help_text="Title for the first image", blank=True, null=True)
-    title1_fr_ch = blocks.CharBlock(required=False, help_text="Title for the first image", blank=True, null=True)
-    title1_it_ch = blocks.CharBlock(required=False, help_text="Title for the first image", blank=True, null=True)
+    title1_de_ch = blocks.CharBlock(required=False, help_text="Title for the first image")
+    title1_fr_ch = blocks.CharBlock(required=False, help_text="Title for the first image")
+    title1_it_ch = blocks.CharBlock(required=False, help_text="Title for the first image")
     subtitle1_en = blocks.TextBlock(required=False, help_text="Subtitle for the first image")
-    subtitle1_de_ch = blocks.TextBlock(required=False, help_text="Subtitle for the first image", blank=True, null=True)
-    subtitle1_fr_ch = blocks.TextBlock(required=False, help_text="Subtitle for the first image", blank=True, null=True)
-    subtitle1_it_ch = blocks.TextBlock(required=False, help_text="Subtitle for the first image", blank=True, null=True)
+    subtitle1_de_ch = blocks.TextBlock(required=False, help_text="Subtitle for the first image")
+    subtitle1_fr_ch = blocks.TextBlock(required=False, help_text="Subtitle for the first image")
+    subtitle1_it_ch = blocks.TextBlock(required=False, help_text="Subtitle for the first image")
     image1 = ImageChooserBlock(required=True, help_text="First image")
 
     title2_en = blocks.CharBlock(required=False, help_text="Title for the second image")
-    title2_de_ch = blocks.CharBlock(required=False, help_text="Title for the second image", blank=True, null=True)
-    title2_fr_ch = blocks.CharBlock(required=False, help_text="Title for the second image", blank=True, null=True)
-    title2_it_ch = blocks.CharBlock(required=False, help_text="Title for the second image", blank=True, null=True)
+    title2_de_ch = blocks.CharBlock(required=False, help_text="Title for the second image")
+    title2_fr_ch = blocks.CharBlock(required=False, help_text="Title for the second image")
+    title2_it_ch = blocks.CharBlock(required=False, help_text="Title for the second image")
     subtitle2_en = blocks.TextBlock(required=False, help_text="Subtitle for the second image")
-    subtitle2_de_ch = blocks.TextBlock(required=False, help_text="Subtitle for the second image", blank=True, null=True)
-    subtitle2_fr_ch = blocks.TextBlock(required=False, help_text="Subtitle for the second image", blank=True, null=True)
-    subtitle2_it_ch = blocks.TextBlock(required=False, help_text="Subtitle for the second image", blank=True, null=True)
+    subtitle2_de_ch = blocks.TextBlock(required=False, help_text="Subtitle for the second image")
+    subtitle2_fr_ch = blocks.TextBlock(required=False, help_text="Subtitle for the second image")
+    subtitle2_it_ch = blocks.TextBlock(required=False, help_text="Subtitle for the second image")
     image2 = ImageChooserBlock(required=True, help_text="Second image")
 
     position = blocks.ChoiceBlock(
@@ -82,11 +83,10 @@ class TwoImageBlock(blocks.StructBlock):
 class CarouselImageBlock(blocks.StructBlock):
     image = ImageChooserBlock(required=True, help_text="Carousel image")
     title_en = blocks.CharBlock(required=False, help_text="Optional title for this image")
-    title_de_ch = blocks.CharBlock(required=False, help_text="Optional title for this image", blank=True, null=True)
-    title_fr_ch = blocks.CharBlock(required=False, help_text="Optional title for this image", blank=True, null=True)
-    title_it_ch = blocks.CharBlock(required=False, help_text="Optional title for this image", blank=True, null=True)
+    title_de_ch = blocks.CharBlock(required=False, help_text="Optional title for this image")
+    title_fr_ch = blocks.CharBlock(required=False, help_text="Optional title for this image")
+    title_it_ch = blocks.CharBlock(required=False, help_text="Optional title for this image")
     extranal_link = blocks.CharBlock(required=False, help_text="Optional external link for this image")
-
 
     class Meta:
         icon = "image"
@@ -102,7 +102,6 @@ class ImageCarouselBlock(blocks.StructBlock):
     class Meta:
         icon = "image"
         label = "Image Carousel Block"
-        template = None
 
 
 class RichtextBlock(blocks.RichTextBlock):
@@ -111,15 +110,19 @@ class RichtextBlock(blocks.RichTextBlock):
 
 
 class FaqItemsBlock(blocks.StructBlock):
-    question_en = blocks.CharBlock()
-    question_de_ch = blocks.CharBlock(blank=True, null=True)
-    question_fr_ch = blocks.CharBlock(blank=True, null=True)
-    question_it_ch = blocks.CharBlock(blank=True, null=True)
+    question_en = blocks.CharBlock(required=True)
+    question_de_ch = blocks.CharBlock(required=False)
+    question_fr_ch = blocks.CharBlock(required=False)
+    question_it_ch = blocks.CharBlock(required=False)
 
-    answer_en = blocks.RichTextBlock()
-    answer_de_ch = blocks.RichTextBlock(blank=True, null=True)
-    answer_fr_ch = blocks.RichTextBlock(blank=True, null=True)
-    answer_it_ch = blocks.RichTextBlock(blank=True, null=True)
+    answer_en = blocks.RichTextBlock(required=True)
+    answer_de_ch = blocks.RichTextBlock(required=False)
+    answer_fr_ch = blocks.RichTextBlock(required=False)
+    answer_it_ch = blocks.RichTextBlock(required=False)
+
+    class Meta:
+        icon = "help"
+        label = "FAQ Item"
 
 
 class FaqBlock(blocks.StructBlock):
@@ -127,6 +130,8 @@ class FaqBlock(blocks.StructBlock):
 
     class Meta:
         template = "home/blocks/faq_block.html"
+        icon = "help"
+        label = "FAQ Block"
 
 
 class MediaTextBlock(blocks.StructBlock):
@@ -136,10 +141,10 @@ class MediaTextBlock(blocks.StructBlock):
     ]
 
     layout = blocks.ChoiceBlock(choices=LAYOUT_CHOICES, default="left_media", label="Layout")
-    description_en = blocks.RichTextBlock()
-    description_de_ch = blocks.RichTextBlock(blank=True, null=True)
-    description_fr_ch = blocks.RichTextBlock(blank=True, null=True)
-    description_it_ch = blocks.RichTextBlock(blank=True, null=True)
+    description_en = blocks.RichTextBlock(required=True)
+    description_de_ch = blocks.RichTextBlock(required=False)
+    description_fr_ch = blocks.RichTextBlock(required=False)
+    description_it_ch = blocks.RichTextBlock(required=False)
 
     media_type = blocks.ChoiceBlock(
         choices=[
@@ -154,19 +159,19 @@ class MediaTextBlock(blocks.StructBlock):
     video_url = blocks.URLBlock(required=False, help_text="YouTube or any external video URL")
 
     button_text_en = blocks.CharBlock(required=False, max_length=50)
-    button_text_de_ch = blocks.CharBlock(required=False, max_length=50, blank=True, null=True)
-    button_text_fr_ch = blocks.CharBlock(required=False, max_length=50, blank=True, null=True)
-    button_text_it_ch = blocks.CharBlock(required=False, max_length=50, blank=True, null=True)
+    button_text_de_ch = blocks.CharBlock(required=False, max_length=50)
+    button_text_fr_ch = blocks.CharBlock(required=False, max_length=50)
+    button_text_it_ch = blocks.CharBlock(required=False, max_length=50)
     button_link = blocks.CharBlock(required=False)
 
     class Meta:
         icon = "image"
         label = "Media + Text Section"
-        template = None
+
 
 from wagtail.contrib.table_block.blocks import TableBlock
 
-class SpecificationBlock(blocks.StreamBlock):
+class SpecificationBlock(blocks.StructBlock):
     table_en = TableBlock(required=False)
     table_de_ch = TableBlock(required=False)
     table_fr_ch = TableBlock(required=False)
@@ -175,17 +180,4 @@ class SpecificationBlock(blocks.StreamBlock):
     class Meta:
         icon = "list-ol"
         label = "Specification Block"
-        template = None
 
-
-COMMON_BLOCKS = [
-    ("title", TitleBlock()),
-    ("banner_image", BannerImageBlock()),
-    ("banner_video", BannerVideoBlock()),
-    ("two_images", TwoImageBlock()),
-    ("carousel", ImageCarouselBlock()),
-    ("richtext", RichtextBlock()),
-    ("faq", FaqBlock()),
-    ("media_text", MediaTextBlock()),
-    ("specifications", SpecificationBlock()),
-]

@@ -1,26 +1,22 @@
 services:
-  db:
-    image: postgres:16
-    container_name: robot_suisse_db
-    environment:
-      - POSTGRES_HOST_AUTH_METHOD=trust
-      - POSTGRES_DB=db
-    volumes:
-      - robot-suisse:/var/lib/postgresql/data
-
-  server:
-    container_name: robot_suisse_server
-    image: registry.gitlab.com/vemate/leadgen/robot-suisse:latest
-    environment:
-      - DJANGO_SETTINGS_MODULE=leadgen.settings.dev
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - ./:/app
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-
-
+    db:
+        image: postgres:16
+        container_name: robot-suisses-db
+        environment:
+            - POSTGRES_HOST_AUTH_METHOD=trust
+        volumes:
+            - robot-suisses-db:/var/lib/postgresql/data
+    server:
+        container_name: robot-suisses-server
+        image: registry.gitlab.com/vemate/leadgen/robot-suisse:latest
+        environment:
+            - DJANGO_SETTINGS_MODULE:robot-suisses.settings.dev
+        command: python manage.py runserver 0.0.0.0:8000
+        volumes:
+            - ./:/app
+        ports:
+            - "8000:8000"
+        depends_on:
+            - db
 volumes:
-  robot-suisse:
+    robot-suisses-db:

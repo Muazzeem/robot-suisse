@@ -1,19 +1,16 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from core.models import BasePage
 from wagtail.models import Page
 from wagtail.admin.panels import (
     FieldPanel,
-    MultiFieldPanel,
+    MultiFieldPanel
 )
-from wagtail.fields import StreamField
-from wagtail.fields import RichTextField
 from wagtail.api import APIField
-
-from .fields import ImageRenditionField, ImageSerializerField
-from .forms import *
-from . import blocks
+from wagtail.fields import StreamField
+from .choices import ROBOTS_CHOICES
+from .blocks import *
+from .fields import ImageRenditionField
 
 
 class Author(models.Model):
@@ -40,52 +37,46 @@ class Author(models.Model):
         return self.name
 
 
-class HomePage(BasePage):
-    template = "home/home.html"
 
-    parent_page_types = []
-    subpage_types = [
-        "ContactPage", "BlogIndexPage", "PublicPage", 
-        "company.CompanyIndexPage", "robot.RobotIndexPage"
-    ]
-
-
-class ContactPage(BasePage):
-    template = "home/contact.html"
-
-    parent_page_types = ["HomePage"]
-    subpage_types = []
-
-
-class PublicPage(BasePage):
-    cover_image = models.ForeignKey(
+class BasePage(Page):
+    og_image = models.ForeignKey(
         "wagtailimages.Image",
-        related_name="+",
+        null=True,
+        blank=True,
         on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name=_("Cover Image"),
-        help_text=_("Cover image for the service detail page"),
+        related_name="+",
+    )
+    og_keywords = models.CharField(
+        _("Og keywords"), max_length=550, null=True, blank=True
+    )
+    robots_directive = models.CharField(
+        max_length=20,
+        choices=ROBOTS_CHOICES,
+        default="index, follow",
+        help_text="Meta robots tag for SEO",
     )
 
-    body = StreamField(
-        blocks.COMMON_BLOCKS,
-        use_json_field=True,
-        null=True,
-        blank=True,
-    )
+    api_fields = []
 
-    content_panels = Page.content_panels + [
-        FieldPanel("cover_image"),
-        MultiFieldPanel([FieldPanel("body")], heading="Body Content"),
+    promote_panels = Page.promote_panels + [
+        FieldPanel("og_image", help_text="size: width-1200px, height-630px"),
+        FieldPanel("og_keywords"),
+        FieldPanel("robots_directive"),
     ]
-
-    parent_page_types = ["home.HomePage"]  # ensure correct app label
-    subpage_types = []
 
     class Meta:
-        verbose_name = "Public Page"
-        verbose_name_plural = "Public Pages"
+        abstract = True
+
+class HomePage(BasePage):
+    parent_page_types = []
+    subpage_types = ["home.BlogIndexPage", "home.RobotIndexPage"]
+
+    content_panels = Page.content_panels + []
+
+    def get_context(self, request):
+        context = super().get_context(request)
+        context["og_image"] = self.og_image
+        return context
 
 
 
@@ -129,9 +120,9 @@ class BlogIndexPage(BasePage):
         APIField("hero_subtitle_ar"),
     ]
 
-    parent_page_types = ["HomePage"]
+    parent_page_types = ["home.HomePage"]
     subpage_types = [
-        "BlogCategoryPage",
+        "home.BlogCategoryPage",
     ]
 
 
@@ -145,14 +136,16 @@ class BlogCategoryPage(BasePage):
     api_fields = BasePage.api_fields + [APIField("title"), APIField("title_ar")]
 
     parent_page_types = [
-        "BlogIndexPage",
+        "home.BlogIndexPage",
     ]
     subpage_types = [
-        "BlogDetailPage",
+        "home.BlogDetailPage",
     ]
 
 
 from rest_framework import serializers
+from .fields import ImageSerializerField
+
 
 class AuthorSerializer(serializers.ModelSerializer):
     image = ImageSerializerField()
@@ -172,10 +165,17 @@ class BlogDetailPage(BasePage):
         related_name="+",
     )
 
-    body = StreamField(
-        [
-            ("title", blocks.TitleBlock()),
-        ],
+    body = StreamField([
+                ("title", TitleBlock()),
+                ("banner_image", BannerImageBlock()),
+                ("banner_video", BannerVideoBlock()),
+                ("two_images", TwoImageBlock()),
+                ("carousel", ImageCarouselBlock()),
+                ("richtext", RichtextBlock()),
+                ("faq", FaqBlock()),
+                ("media_text", MediaTextBlock()),
+                # ("specifications", SpecificationBlock()),
+            ],
         null=True,
         blank=True,
         use_json_field=True,
@@ -206,7 +206,7 @@ class BlogDetailPage(BasePage):
             "title_ar": obj.specific.title_ar,
             "slug": obj.specific.slug,
         }
-    
+
     content_panels = Page.content_panels + [
         FieldPanel("title_ar"),
         MultiFieldPanel(
@@ -216,6 +216,7 @@ class BlogDetailPage(BasePage):
                 FieldPanel("is_featured"),
                 FieldPanel("tags"),
                 FieldPanel("thumbnail", help_text="252x372 pixel"),
+                FieldPanel("body"),
             ],
             heading="Header",
         ),
@@ -227,6 +228,7 @@ class BlogDetailPage(BasePage):
         ),
         MultiFieldPanel([FieldPanel("body")], heading="Body"),
     ]
+
     api_fields = BasePage.api_fields + [
         APIField("title"),
         APIField("title_ar"),
@@ -250,5 +252,130 @@ class BlogDetailPage(BasePage):
         "home.BlogCategoryPage",
     ]
     subpage_types = []
-    
 
+
+class RobotCategoryPage(BasePage):
+    title_ar = models.CharField(_("Title ar"), max_length=250, null=True, blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel("title_ar"),
+    ]
+
+    api_fields = BasePage.api_fields + [APIField("title"), APIField("title_ar")]
+
+    parent_page_types = [
+        "home.RobotIndexPage",
+    ]
+    subpage_types = [
+        "home.RobotDetailsPage",
+    ]
+
+
+class RobotCategoryPageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RobotCategoryPage
+        fields = ("id", "title", "title_ar", "slug")
+
+
+class RobotIndexPage(BasePage):
+    title_ar = models.CharField(_("Title ar"), max_length=250, null=True, blank=True)
+    hero_title = models.CharField(
+        _("Hero title"), max_length=250, null=True, blank=True
+    )
+    hero_title_ar = models.CharField(
+        _("Hero title ar"), max_length=250, null=True, blank=True
+    )
+    hero_subtitle = models.CharField(
+        _("Hero subtitle"), max_length=250, null=True, blank=True
+    )
+    hero_subtitle_ar = models.CharField(
+        _("Hero subtitle ar"), max_length=250, null=True, blank=True
+    )
+
+    @property
+    def categories(self):
+
+        childs = self.get_children()
+        return RobotCategoryPageSerializer(childs, many=True).data
+
+    content_panels = Page.content_panels + [
+        FieldPanel("title_ar"),
+        FieldPanel("hero_title"),
+        FieldPanel("hero_title_ar"),
+        FieldPanel("hero_subtitle"),
+        FieldPanel("hero_subtitle_ar"),
+    ]
+
+    api_fields = BasePage.api_fields + [
+        APIField("title"),
+        APIField("title_ar"),
+        APIField("categories"),
+        APIField("hero_title"),
+        APIField("hero_title_ar"),
+        APIField("hero_subtitle"),
+        APIField("hero_subtitle_ar"),
+    ]
+
+    parent_page_types = ["home.HomePage"]
+    subpage_types = [
+        "home.RobotCategoryPage",
+    ]
+
+class RobotDetailsPage(BasePage):
+    STATUS_CHOICES = [
+        ("active", "Active"),
+        ("inactive", "Inactive"),
+        ("upcoming", "Upcoming"),
+        ("archived", "Archived"),
+    ]
+
+    is_featured = models.BooleanField(default=False, help_text="Featured robots will be displayed on the homepage.")
+    name_en = models.CharField(max_length=255)
+    name_de_ch = models.CharField(max_length=255, blank=True, null=True)
+    name_fr_ch = models.CharField(max_length=255, blank=True, null=True)
+    name_it_ch = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
+    brand = models.CharField(max_length=255, blank=True, null=True)
+    tags = models.JSONField(blank=True, null=True)
+
+    body = StreamField([
+                ("title", TitleBlock()),
+                ("banner_image", BannerImageBlock()),
+                ("banner_video", BannerVideoBlock()),
+                ("two_images", TwoImageBlock()),
+                ("carousel", ImageCarouselBlock()),
+                ("richtext", RichtextBlock()),
+                ("faq", FaqBlock()),
+                ("media_text", MediaTextBlock()),
+            ],
+        null=True,
+        blank=True,
+        use_json_field=True,
+    )
+
+
+    content_panels = Page.content_panels + [
+        FieldPanel("is_featured"),
+        FieldPanel("name_en"),
+        FieldPanel("name_de_ch"),
+        FieldPanel("name_fr_ch"),
+        FieldPanel("name_it_ch"),
+        FieldPanel("status"),
+        FieldPanel("brand"),
+        FieldPanel("tags"),
+        FieldPanel("body"),
+    ]
+
+    parent_page_types = ["home.RobotCategoryPage"]
+    subpage_types = []
+
+    api_fields = BasePage.api_fields + [
+        APIField("name_en"),
+        APIField("name_de_ch"),
+        APIField("name_fr_ch"),
+        APIField("name_it_ch"),
+        APIField("status"),
+        APIField("brand"),
+        APIField("tags"),
+        APIField("body"),
+    ]

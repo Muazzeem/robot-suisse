@@ -1,22 +1,23 @@
+version: "3"
+
 services:
     db:
         image: postgres:16
-        container_name: recovery_service_db
+        container_name: robot-suisses_db
         environment:
             - POSTGRES_HOST_AUTH_METHOD=trust
         volumes:
-            - recovery-db:/var/lib/postgresql/data
+            - robot-suisses-db:/var/lib/postgresql/data
     server:
-        container_name: recovery_service_server
-        image: registry.gitlab.com/vemate/leadgen/recovery-service:prod
+        container_name: robot-suisses_server
+        image: ghcr.io/mubarak117136/robot-suisses:prod
         environment:
-            - DJANGO_SETTINGS_MODULE:leadgen.settings.production
-        command: gunicorn -w 2 -b unix:/app/server/socket/SERVER.sock leadgen.wsgi:application
+            - DJANGO_SETTINGS_MODULE:robot-suisses.settings.production
+        command: gunicorn -w 10 -b unix:/app/server/socket/PROJECT_NAME.sock robot-suisses.wsgi:application
         volumes:
             - ./server/.env:/app/server/.env
             - ./server/static:/app/server/static
-            - ./server/leadgen/static:/app/server/leadgen/static
             - ./server/media:/app/server/media
             - ./server/socket:/app/server/socket
 volumes:
-    recovery-db:
+    robot-suisses-db:
