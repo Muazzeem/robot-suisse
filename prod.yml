@@ -3,14 +3,14 @@ version: "3"
 services:
     db:
         image: postgres:16
-        container_name: robot-suisses_db
+        container_name: robot-suisses-db
         environment:
             - POSTGRES_HOST_AUTH_METHOD=trust
         volumes:
             - robot-suisses-db:/var/lib/postgresql/data
     server:
-        container_name: robot-suisses_server
-        image: ghcr.io/mubarak117136/robot-suisses:prod
+        container_name: robot-suisses-server
+        image: registry.gitlab.com/vemate/leadgen/robot-suisse:prod
         environment:
             - DJANGO_SETTINGS_MODULE:robot-suisses.settings.production
         command: gunicorn -w 10 -b unix:/app/server/socket/PROJECT_NAME.sock robot-suisses.wsgi:application
