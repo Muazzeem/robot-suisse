@@ -5,7 +5,9 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 
 INSTALLED_APPS = [
+    "corsheaders",
     "home",
+    "utility",
     "search",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
@@ -19,6 +21,8 @@ INSTALLED_APPS = [
     "wagtail.search",
     "wagtail.admin",
     "wagtail",
+    "wagtail.contrib.settings",
+    "wagtail.contrib.table_block",
     "modelcluster",
     "taggit",
     "django.contrib.admin",
@@ -49,6 +53,7 @@ LANGUAGES = [
 WAGTAIL_CONTENT_LANGUAGES = LANGUAGES
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -152,5 +157,8 @@ WAGTAILSEARCH_BACKENDS = {
 
 WAGTAILADMIN_BASE_URL = "http://example.com"
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
 
-
+CORS_ALLOW_ALL_ORIGINS = True

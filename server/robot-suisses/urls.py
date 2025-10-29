@@ -18,7 +18,8 @@ urlpatterns = [
     path("admin/", include(wagtailadmin_urls)),  # Wagtail admin
     path("documents/", include(wagtaildocs_urls)),  # Wagtail documents
     path("api/v2/", api_router.urls),  # Wagtail API (headless)
-    path("api/v1/home/", include("home.urls", namespace="home")),  # Custom API
+    path("api/v1/home/", include("home.urls", namespace="home")),
+    path("api/v1/utility/", include("utility.urls", namespace="utility")),
 ]
 
 # ------------------------------------------------------------

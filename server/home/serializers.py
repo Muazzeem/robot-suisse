@@ -1,9 +1,10 @@
 from rest_framework import serializers
+from .models import Author
+from .fields import ImageSerializerField 
 
-from .models import BlogCategoryPage
+class AuthorSerializer(serializers.ModelSerializer):
+    image = ImageSerializerField()
 
-
-class BlogCategoryPageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BlogCategoryPage
-        fields = ("id", "title", "title_ar", "slug")
+        model = Author
+        fields = "__all__"

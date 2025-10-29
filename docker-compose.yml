@@ -8,7 +8,10 @@ services:
             - robot-suisses-db:/var/lib/postgresql/data
     server:
         container_name: robot-suisses-server
-        image: registry.gitlab.com/vemate/leadgen/robot-suisse:latest
+        # image: registry.gitlab.com/vemate/leadgen/robot-suisse:latest
+        build:
+            context: .
+            dockerfile: server/Dockerfile-dev
         environment:
             - DJANGO_SETTINGS_MODULE:robot-suisses.settings.dev
         command: python manage.py runserver 0.0.0.0:8000
