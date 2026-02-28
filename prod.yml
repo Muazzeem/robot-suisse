@@ -10,6 +10,8 @@ services:
             - "127.0.0.1:5432:5432"
         volumes:
             - robot-suisses-db:/var/lib/postgresql/data
+        networks:
+            - robot-suisses-network
         restart: unless-stopped
 
     server:
@@ -28,25 +30,8 @@ services:
             - media-files:/app/server/media
         depends_on:
             - db
-        restart: unless-stopped
-
-    n8n:
-        image: n8nio/n8n
-        container_name: robot-suisses-n8n
-        ports:
-            - "5678:5678"
-        environment:
-            - DB_TYPE=postgresdb
-            - DB_POSTGRESDB_HOST=db
-            - DB_POSTGRESDB_PORT=5432
-            - DB_POSTGRESDB_DATABASE=${N8N_DB_NAME}
-            - DB_POSTGRESDB_USER=${DB_USER}
-            - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD}
-            - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
-        volumes:
-            - n8n-data:/home/node/.n8n
-        depends_on:
-            - db
+        networks:
+            - robot-suisses-network
         restart: unless-stopped
 
     caddy:
@@ -62,6 +47,8 @@ services:
             - caddy-config:/config
         depends_on:
             - server
+        networks:
+            - robot-suisses-network
         restart: unless-stopped
 
 volumes:
@@ -70,4 +57,7 @@ volumes:
     media-files:
     caddy-data:
     caddy-config:
-    n8n-data:
+
+networks:
+    robot-suisses-network:
+        driver: bridge

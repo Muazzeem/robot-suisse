@@ -1,0 +1,28 @@
+services:
+    n8n:
+        image: n8nio/n8n
+        container_name: robot-suisses-n8n
+        ports:
+            - "5678:5678"
+        environment:
+            - DB_TYPE=postgresdb
+            - DB_POSTGRESDB_HOST=db
+            - DB_POSTGRESDB_PORT=5432
+            - DB_POSTGRESDB_DATABASE=${N8N_DB_NAME}
+            - DB_POSTGRESDB_USER=${DB_USER}
+            - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD}
+            - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+        env_file:
+            - .env
+        volumes:
+            - n8n-data:/home/node/.n8n
+        networks:
+            - robot-suisses-network
+        restart: unless-stopped
+
+volumes:
+    n8n-data:
+
+networks:
+    robot-suisses-network:
+        external: true
