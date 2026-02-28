@@ -1,23 +1,73 @@
-version: "3"
-
 services:
     db:
         image: postgres:16
         container_name: robot-suisses-db
         environment:
-            - POSTGRES_HOST_AUTH_METHOD=trust
+            - POSTGRES_DB=${DB_NAME}
+            - POSTGRES_USER=${DB_USER}
+            - POSTGRES_PASSWORD=${DB_PASSWORD}
+        ports:
+            - "127.0.0.1:5432:5432"
         volumes:
             - robot-suisses-db:/var/lib/postgresql/data
+        restart: unless-stopped
+
     server:
         container_name: robot-suisses-server
-        image: registry.gitlab.com/vemate/leadgen/robot-suisse:prod
-        environment:
-            - DJANGO_SETTINGS_MODULE:robot-suisses.settings.production
-        command: gunicorn -w 10 -b unix:/app/server/socket/PROJECT_NAME.sock robot-suisses.wsgi:application
+        build:
+            context: .
+            dockerfile: server/Dockerfile-prod
+        env_file:
+            - .env
+        command: >
+            sh -c "python manage.py collectstatic --noinput &&
+                   python manage.py migrate &&
+                   gunicorn robot-suisses.wsgi:application --bind 0.0.0.0:8000 --workers 3"
         volumes:
-            - ./server/.env:/app/server/.env
-            - ./server/static:/app/server/static
-            - ./server/media:/app/server/media
-            - ./server/socket:/app/server/socket
+            - static-files:/app/server/static
+            - media-files:/app/server/media
+        depends_on:
+            - db
+        restart: unless-stopped
+
+    n8n:
+        image: n8nio/n8n
+        container_name: robot-suisses-n8n
+        ports:
+            - "5678:5678"
+        environment:
+            - DB_TYPE=postgresdb
+            - DB_POSTGRESDB_HOST=db
+            - DB_POSTGRESDB_PORT=5432
+            - DB_POSTGRESDB_DATABASE=${N8N_DB_NAME}
+            - DB_POSTGRESDB_USER=${DB_USER}
+            - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD}
+            - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+        volumes:
+            - n8n-data:/home/node/.n8n
+        depends_on:
+            - db
+        restart: unless-stopped
+
+    caddy:
+        image: caddy:2-alpine
+        container_name: robot-suisses-caddy
+        ports:
+            - "80:80"
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile
+            - static-files:/srv/static
+            - media-files:/srv/media
+            - caddy-data:/data
+            - caddy-config:/config
+        depends_on:
+            - server
+        restart: unless-stopped
+
 volumes:
     robot-suisses-db:
+    static-files:
+    media-files:
+    caddy-data:
+    caddy-config:
+    n8n-data:
