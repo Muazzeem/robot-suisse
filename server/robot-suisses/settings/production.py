@@ -1,6 +1,6 @@
 from .base import *
 
-DEBUG = False
+DEBUG = True
 SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = ["*"]
 
