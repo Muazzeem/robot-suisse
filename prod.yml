@@ -39,6 +39,7 @@ services:
         container_name: robot-suisses-caddy
         ports:
             - "80:80"
+            - "443:443"
         volumes:
             - ./Caddyfile:/etc/caddy/Caddyfile
             - static-files:/srv/static
