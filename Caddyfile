@@ -1,17 +1,14 @@
-fifadesk.com, www.fifadesk.com {
+fifadesk.com {
 
-    # Serve Django static files directly
     handle /static/* {
         root * /srv
         file_server
     }
 
-    # Serve Django media files directly
     handle /media/* {
         root * /srv
         file_server
     }
 
-    # Proxy everything else to gunicorn (docker service "server")
     reverse_proxy server:8000
 }
