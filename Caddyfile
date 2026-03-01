@@ -1,4 +1,5 @@
-:80 {
+fifadesk.com, www.fifadesk.com {
+
     # Serve Django static files directly
     handle /static/* {
         root * /srv
@@ -11,6 +12,6 @@
         file_server
     }
 
-    # Proxy everything else to gunicorn
+    # Proxy everything else to gunicorn (docker service "server")
     reverse_proxy server:8000
 }
