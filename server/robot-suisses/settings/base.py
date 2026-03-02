@@ -158,6 +158,8 @@ WAGTAILSEARCH_BACKENDS = {
 
 WAGTAILADMIN_BASE_URL = "https://fifadesk.com"
 
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
