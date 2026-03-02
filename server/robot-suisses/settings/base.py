@@ -156,7 +156,7 @@ WAGTAILSEARCH_BACKENDS = {
     }
 }
 
-WAGTAILADMIN_BASE_URL = "http://example.com"
+WAGTAILADMIN_BASE_URL = "https://fifadesk.com"
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",

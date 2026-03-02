@@ -5,7 +5,8 @@ SECRET_KEY = config("SECRET_KEY")
 ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://example.com",
+    "https://fifadesk.com",
+    "https://www.fifadesk.com",
 ]
 
 try:
