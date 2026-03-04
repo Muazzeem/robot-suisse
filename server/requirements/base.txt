@@ -6,3 +6,12 @@ django-extensions==4.1
 ipython==9.4.0
 django-cors-headers==4.9.0
 
+# Chat
+# ------------------------------------------------------------------------------
+uvicorn==0.35.0  # https://github.com/encode/uvicorn
+
+channels-redis==4.2.1  # https://github.com/django/channels_redis
+channels==4.2.2  # https://github.com/django/channels
+daphne==4.2.1  # https://github.com/django/daphne
+setuptools==80.1.0  # https://github.com/pypa/setuptools
+daphne==4.2.1
