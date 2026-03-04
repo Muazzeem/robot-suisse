@@ -1,3 +1,7 @@
+n8n.fifadesk.com {
+    reverse_proxy localhost:5678
+}
+
 fifadesk.com {
 
     handle /static/* {

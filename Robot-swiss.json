@@ -1,0 +1,133 @@
+{
+  "name": "Robot-swiss",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        16
+      ],
+      "id": "35dd55d9-2067-4547-90b5-2244e10915fa",
+      "name": "When clicking 'Execute workflow'"
+    },
+    {
+      "parameters": {
+        "path": "c929dbc6-47d3-402a-b33b-b75bd87e3b8f",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -16,
+        -208
+      ],
+      "id": "a015f2e9-7976-4c93-a62b-bbc1e59a5eb8",
+      "name": "Webhook",
+      "webhookId": "c929dbc6-47d3-402a-b33b-b75bd87e3b8f"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "resource": "fileFolder",
+        "operation": "list",
+        "folderId": {
+          "__rl": true,
+          "value": "1nYTX3olAvFZWB8DpX2pVxTniIrzfVCmP",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        208,
+        -96
+      ],
+      "id": "b1c2d3e4-f5a6-7890-bcde-f01234567890",
+      "name": "List Files in Folder",
+      "credentials": {
+        "googleApi": {
+          "id": "lvQuiZLF0blhfvNf",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        432,
+        -96
+      ],
+      "id": "9ebadf77-33c6-4cbe-ba41-fda96c45338c",
+      "name": "Download File",
+      "credentials": {
+        "googleApi": {
+          "id": "lvQuiZLF0blhfvNf",
+          "name": "Google Drive account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "List Files in Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "List Files in Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Files in Folder": {
+      "main": [
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "eae7db3b-e532-4f56-bb9f-edaabb0a509a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1024d4a0bdb451c88b4bc14d3bfc3a2e5b93aca4588e773c7a54e98c73646ff7"
+  },
+  "id": "WsmTY66j6GPQXR8R",
+  "tags": []
+}
