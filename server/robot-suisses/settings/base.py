@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "wagtail.api.v2",
     "rest_framework",
+    "chat",
     "companies",
 ]
 
