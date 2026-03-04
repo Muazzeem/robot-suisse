@@ -37,6 +37,8 @@ services:
     caddy:
         image: caddy:2-alpine
         container_name: robot-suisses-caddy
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         ports:
             - "80:80"
             - "443:443"
