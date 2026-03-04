@@ -6,6 +6,9 @@ services:
             - "5678:5678"
         environment:
             - N8N_SECURE_COOKIE=false
+            - N8N_HOST=n8n.fifadesk.com
+            - N8N_PORT=5678
+            - N8N_PROTOCOL=https
             - N8N_EDITOR_BASE_URL=https://n8n.fifadesk.com
             - WEBHOOK_URL=https://n8n.fifadesk.com
         volumes:

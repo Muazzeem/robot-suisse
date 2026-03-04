@@ -20,6 +20,8 @@ urlpatterns = [
     path("api/v2/", api_router.urls),  # Wagtail API (headless)
     path("api/v1/home/", include("home.urls", namespace="home")),
     path("api/v1/utility/", include("utility.urls", namespace="utility")),
+    path("api/v1/chat/", include("chat.urls", namespace="chat")),
+    path("api/companies/", include("companies.urls", namespace="companies")),
 ]
 
 # ------------------------------------------------------------

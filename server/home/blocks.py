@@ -54,6 +54,15 @@ def multi_lang_richtext(required=True, help_text=""):
         ("itch", blocks.RichTextBlock(required=False, help_text=help_text + " (IT)")),
     ])
 
+def multi_lang_block(block_type, required=True, help_text=""):
+    return blocks.StructBlock([
+        ("en", block_type(required=required, help_text=help_text + " (EN)")),
+        ("dech", block_type(required=False, help_text=help_text + " (DE)")),
+        ("frch", block_type(required=False, help_text=help_text + " (FR)")),
+        ("itch", block_type(required=False, help_text=help_text + " (IT)")),
+    ])
+
+
 class HeroSubItemBlock(blocks.StructBlock):
     title = multi_lang_char()
 
@@ -66,6 +75,15 @@ class HeroTitleBlock(blocks.StructBlock):
     class Meta:
         icon = "title"
         label = "Hero Title Block"
+
+class HeroBlock(blocks.StructBlock):
+    image = ImageChooserBlock(required=True)
+    title = multi_lang_char()
+    subtitle = multi_lang_richtext(required=False)
+
+    class Meta:
+        icon = "title"
+        label = "Hero Block"
 
 class TitleBlock(blocks.StructBlock):
     bg_color_code = blocks.CharBlock(required=False)
@@ -134,6 +152,11 @@ class StatsBlock(blocks.StructBlock):
     class Meta:
         icon = "image"
         label = "Stats Block"
+        
+class CompaniesBlock(blocks.StructBlock):
+    class Meta:
+        icon = "image"
+        label = "Companies Block"
 
 class FaqBlock(blocks.StructBlock):
     items = blocks.ListBlock(
@@ -175,12 +198,8 @@ class BannerVideoBlock(blocks.StructBlock):
         label = "Banner Video Block"
 
 class SpecificationBlock(blocks.StructBlock):
-    table = blocks.StructBlock([
-        ("en", TableBlock(required=False)),
-        ("dech", TableBlock(required=False)),
-        ("frch", TableBlock(required=False)),
-        ("itch", TableBlock(required=False)),
-    ])
+    table = multi_lang_block(TableBlock, required=False, help_text="Specification table")
+
     class Meta:
         icon = "list-ol"
         label = "Specification Block"
@@ -253,6 +272,7 @@ class ChatBlock(blocks.StructBlock):
         label = "Chat Block"
 
 class ContactSection(blocks.StructBlock):
+    tag = multi_lang_char(required=False)
     description = multi_lang_richtext(required=False)
     icon = blocks.CharBlock(required=False)
     chat_section = multi_lang_richtext(required=False)
@@ -263,8 +283,41 @@ class ContactSection(blocks.StructBlock):
         icon = "form"
         label = "Contact Section"
 
+class ProfileContactSection(blocks.StructBlock):
+    description = multi_lang_richtext(required=False)
+    cards = blocks.ListBlock(
+        blocks.StructBlock([
+            ("icon", blocks.CharBlock(required=False)),
+            ("description", multi_lang_richtext(required=False)),
+        ])
+    )
+
+    class Meta:
+        icon = "form"
+        label = "Contact Section"
+
 class SpacerBlock(blocks.StructBlock):
-    height = blocks.IntegerBlock(default=20, help_text="Height in rem")
+    height = blocks.IntegerBlock(default=4, help_text="Height in rem")
+
+    class Meta:
+        icon = "arrows-up-down"
+        label = "Spacer Block"
+
+
+class ServiceCardsSection(blocks.StructBlock):
+    cards = blocks.ListBlock(
+        blocks.StructBlock([
+            ("icon", blocks.CharBlock(required=False)),
+            ("description", multi_lang_richtext(required=False)),
+        ])
+    )
+
+    class Meta:
+        icon = "list-ul"
+        label = "Service Cards Section"
+
+class SpacerBlock(blocks.StructBlock):
+    height = blocks.IntegerBlock(default=4, help_text="Height in rem")
 
     class Meta:
         icon = "arrows-up-down"
@@ -294,6 +347,25 @@ class CardsListBlock(blocks.StructBlock):
         icon = "image"
         label = "Cards List"
 
+
+class HowItWorksBlock(blocks.StructBlock):
+    tag = multi_lang_char()
+    discription = multi_lang_richtext()
+    icon = blocks.CharBlock(required=False)
+    text = multi_lang_richtext()
+    button_text = multi_lang_char(required=False)
+    button_link = blocks.CharBlock(required=False)
+    items = blocks.ListBlock(
+        blocks.StructBlock([
+            ("description", multi_lang_richtext())
+        ])
+    )
+
+    class Meta:
+        icon = "doc-full"
+        label = "How It Works Block"
+
+
 class TeamBlock(blocks.StructBlock):
     team = CategoriesBlock()
 
@@ -314,3 +386,49 @@ class ContactInfoBlock(blocks.StructBlock):
     class Meta:
         icon = "image"
         label = "Contact Info"
+
+class RobotsFilterBlock(blocks.StructBlock):
+    title = multi_lang_char()
+    description = multi_lang_richtext(required=False)
+
+    class Meta:
+        icon = "cogs"
+        label = "Robots List"
+
+class BlogsListBlock(blocks.StructBlock):
+    class Meta:
+        icon = "doc-full"
+        label = "Blogs List"
+
+
+class CompanyHeaderBlock(blocks.StructBlock):
+    title = multi_lang_char()
+    description = multi_lang_richtext(required=False)
+    website = blocks.URLBlock(required=False)
+    email = blocks.EmailBlock(required=False)
+    phone = blocks.CharBlock(required=False)
+
+    class Meta:
+        icon = "image"
+        label = "Company Header Block"
+
+class CompanyDetailsBlock(blocks.StructBlock):
+    description = multi_lang_richtext(required=False)
+
+    class Meta:
+        icon = "image"
+        label = "Company Details Block"
+
+class ContactListBlock(blocks.StructBlock):
+    contacts = blocks.ListBlock(
+        blocks.StructBlock([
+            ("image", ImageChooserBlock(required=False)),
+            ("avatar", blocks.URLBlock(required=False, help_text="URL of the avatar image")),
+            ("name", multi_lang_char()),
+            ("description", multi_lang_richtext(required=False)),
+        ])
+    )
+
+    class Meta:
+        icon = "image"
+        label = "Contact List Block"

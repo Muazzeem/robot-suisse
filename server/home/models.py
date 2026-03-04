@@ -98,9 +98,14 @@ class HomePage(BasePage):
     parent_page_types = []
     subpage_types = [
         "home.AboutPage",
+        "home.ProfilePage",
+        "home.RobotIndexPage",
+        "home.RobotPage",
         "home.BlogIndexPage",
         "home.ContactPage",
         "home.PublicPage",
+        "home.BlogListPage",
+        "home.CompanyPage",
     ]
 
     def get_context(self, request):
@@ -108,24 +113,60 @@ class HomePage(BasePage):
         context["og_image"] = self.og_image
         return context
 
+class ProfilePage(BasePage):
+    body = StreamField(
+        [
+            ("hero", HeroBlock()),
+            ("title", TitleBlock()),
+            ("spacer", SpacerBlock()),
+            ("blog", BlogsBlock()), 
+            ("stats", StatsBlock()),
+            ("service_card", ServiceCardsSection()),
+            ("companies", CompaniesBlock()),
+            ("robots", RobotsBlock()),
+            ("team", TeamBlock()),
+            ("profile_contact", ProfileContactSection()),
+            ("image", BannerImageBlock()),
+        ],
+        null=True,
+        blank=True,
+        use_json_field=True,
+    )
+
+    content_panels = Page.content_panels + [
+        MultiFieldPanel([FieldPanel("body")], heading="Body")
+    ]
+
+    api_fields = BasePage.api_fields + [
+        APIField("title"), APIField("body")
+    ]
+
+    parent_page_types = ["home.HomePage"]
+    subpage_types = []
+
 
 # ---------------------------- Blog Pages ----------------------------
+class BlogIndexPage(Page):
+    tag = StreamField(
+        [("tag", multi_lang_char(help_text="The tag for the page"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
 
-class BlogIndexPage(BasePage):
-    tag_en = models.CharField(max_length=255, help_text="The tag for the page.")
-    tag_dech = models.CharField(max_length=255, blank=True, null=True, help_text="German tag")
-    tag_frch = models.CharField(max_length=255, blank=True, null=True, help_text="French tag")
-    tag_itch = models.CharField(max_length=255, blank=True, null=True, help_text="Italian tag")
+    hero_title = StreamField(
+        [("title", multi_lang_char(help_text="Hero title"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
 
-    hero_title_en = models.CharField(max_length=255)
-    hero_title_dech = models.CharField(max_length=255, blank=True, null=True)
-    hero_title_frch = models.CharField(max_length=255, blank=True, null=True)
-    hero_title_itch = models.CharField(max_length=255, blank=True, null=True)
-
-    hero_description_en = models.TextField(blank=True)
-    hero_description_dech = models.TextField(blank=True, null=True)
-    hero_description_frch = models.TextField(blank=True, null=True)
-    hero_description_itch = models.TextField(blank=True, null=True)
+    hero_description = StreamField(
+        [("description", multi_lang_richtext(required=False, help_text="Hero description"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
 
     hero_image = models.ForeignKey(
         "wagtailimages.Image", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
@@ -134,25 +175,22 @@ class BlogIndexPage(BasePage):
     @property
     def categories(self):
         from .serializers import BlogCategoryPageSerializer
-
         childs = self.get_children()
         return BlogCategoryPageSerializer(childs, many=True).data
 
     content_panels = Page.content_panels + [
-        FieldPanel("tag_en"), FieldPanel("tag_dech"), FieldPanel("tag_frch"), FieldPanel("tag_itch"),
-        FieldPanel("hero_title_en"), FieldPanel("hero_title_dech"), FieldPanel("hero_title_frch"), FieldPanel("hero_title_itch"),
-        FieldPanel("hero_description_en"), FieldPanel("hero_description_dech"),
-        FieldPanel("hero_description_frch"), FieldPanel("hero_description_itch"),
+        FieldPanel("tag"),
+        FieldPanel("hero_title"),
+        FieldPanel("hero_description"),
         FieldPanel("hero_image"),
     ]
 
     api_fields = BasePage.api_fields + [
         APIField("categories"),
         APIField("hero_image"),
-        APIField("tag_en"), APIField("tag_dech"), APIField("tag_frch"), APIField("tag_itch"),
-        APIField("hero_title_en"), APIField("hero_title_dech"), APIField("hero_title_frch"), APIField("hero_title_itch"),
-        APIField("hero_description_en"), APIField("hero_description_dech"),
-        APIField("hero_description_frch"), APIField("hero_description_itch"),
+        APIField("tag"),
+        APIField("hero_title"),
+        APIField("hero_description"),
     ]
 
     parent_page_types = ["home.HomePage"]
@@ -160,19 +198,19 @@ class BlogIndexPage(BasePage):
 
 
 class BlogCategoryPage(BasePage):
-    title_en = models.CharField(_("Title en"), max_length=250, null=True, blank=True)
-    title_dech = models.CharField(_("Title dech"), max_length=250, null=True, blank=True)
-    title_frch = models.CharField(_("Title frch"), max_length=250, null=True, blank=True)
-    title_itch = models.CharField(_("Title itch"), max_length=250, null=True, blank=True)
+    cat_title = StreamField(
+        [("title", multi_lang_char(help_text="Category title"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
 
     content_panels = Page.content_panels + [
-        FieldPanel("title_en"), FieldPanel("title_dech"),
-        FieldPanel("title_frch"), FieldPanel("title_itch")
+        FieldPanel("cat_title")
     ]
 
     api_fields = BasePage.api_fields + [
-        APIField("title_en"), APIField("title_dech"),
-        APIField("title_frch"), APIField("title_itch")
+        APIField("cat_title")
     ]
 
     parent_page_types = ["home.BlogIndexPage"]
@@ -180,10 +218,26 @@ class BlogCategoryPage(BasePage):
 
 
 class BlogDetailPage(BasePage):
-    title_en = models.CharField(max_length=250, null=True, blank=True)
-    title_dech = models.CharField(max_length=250, null=True, blank=True)
-    title_frch = models.CharField(max_length=250, null=True, blank=True)
-    title_itch = models.CharField(max_length=250, null=True, blank=True)
+    blog_title = StreamField(
+        [("title", multi_lang_char(help_text="Blog title"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    short_description = StreamField(
+        [("description", multi_lang_richtext(required=False, help_text="Short description"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    tags = StreamField(
+        [("tags", multi_lang_char(required=False, help_text="Blog tags"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
 
     thumbnail = models.ForeignKey(
         "wagtailimages.Image", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
@@ -191,47 +245,45 @@ class BlogDetailPage(BasePage):
 
     body = StreamField(
         [
-            ("title", TitleBlock()), ("banner_image", BannerImageBlock()),
+            ("title", TitleBlock()),
+            ("banner_image", BannerImageBlock()),
             ("banner_video", BannerVideoBlock()),
-            ("carousel", ImageCarouselBlock()), ("richtext", RichtextBlock()),
-            ("faq", FaqBlock()), ("media_text", MediaTextBlock())
+            ("carousel", ImageCarouselBlock()),
+            ("richtext", RichtextBlock()),
+            ("faq", FaqBlock()),
+            ("media_text", MediaTextBlock())
         ],
-        null=True,
-        blank=True,
         use_json_field=True,
+        blank=True,
+        null=True,
     )
 
     author = models.ForeignKey(Author, null=True, blank=True, on_delete=models.SET_NULL)
     is_featured = models.BooleanField(default=False)
-    tags_en = models.CharField(max_length=250, null=True, blank=True)
-    tags_dech = models.CharField(max_length=250, null=True, blank=True)
-    tags_frch = models.CharField(max_length=250, null=True, blank=True)
-    tags_itch = models.CharField(max_length=250, null=True, blank=True)
-    short_description_en = models.TextField(null=True, blank=True)
-    short_description_dech = models.TextField(null=True, blank=True)
-    short_description_frch = models.TextField(null=True, blank=True)
-    short_description_itch = models.TextField(null=True, blank=True)
 
     @property
     def fetch_parent(self):
-        obj = self.get_parent()
+        parent = self.get_parent().specific
+        cat_title_value = {}
+        if parent.cat_title:
+            for block in parent.cat_title:
+                cat_title_value[block.block_type] = block.value
+
         return {
-            "id": obj.specific.id,
-            "title_en": getattr(obj.specific, "title_en", ""),
-            "title_dech": getattr(obj.specific, "title_dech", ""),
-            "title_frch": getattr(obj.specific, "title_frch", ""),
-            "title_itch": getattr(obj.specific, "title_itch", ""),
-            "slug": obj.specific.slug,
+            "id": parent.id,
+            "title": cat_title_value,
+            "slug": parent.slug,
         }
 
     content_panels = Page.content_panels + [
         MultiFieldPanel(
-            [FieldPanel("title_en"), FieldPanel("title_dech"), FieldPanel("title_frch"), FieldPanel("title_itch"),
-             FieldPanel("short_description_en"), FieldPanel("short_description_dech"),
-             FieldPanel("short_description_frch"), FieldPanel("short_description_itch"),
-             FieldPanel("is_featured"), FieldPanel("tags_en"), FieldPanel("tags_dech"),
-             FieldPanel("tags_frch"), FieldPanel("tags_itch"), FieldPanel("thumbnail"),
-             FieldPanel("body")],
+            [
+                FieldPanel("blog_title"),
+                FieldPanel("short_description"),
+                FieldPanel("is_featured"),
+                FieldPanel("tags"),
+                FieldPanel("thumbnail")
+            ],
             heading="Header"
         ),
         MultiFieldPanel([FieldPanel("author")], heading="Author"),
@@ -239,16 +291,183 @@ class BlogDetailPage(BasePage):
     ]
 
     api_fields = BasePage.api_fields + [
-        APIField("title_en"), APIField("title_dech"), APIField("title_frch"), APIField("title_itch"),
-        APIField("short_description_en"), APIField("short_description_dech"),
-        APIField("short_description_frch"), APIField("short_description_itch"),
-        APIField("tags_en"), APIField("tags_dech"), APIField("tags_frch"), APIField("tags_itch"),
+        APIField("blog_title"),
+        APIField("short_description"),
+        APIField("tags"),
         APIField("thumbnail", serializer=ImageRenditionField({"original": "original|jpegquality-80|format-webp"})),
-        APIField("author", serializer=AuthorSerializer()), APIField("last_published_at"),
-        APIField("body"), APIField("is_featured"), APIField("fetch_parent")
+        APIField("author", serializer=AuthorSerializer()),
+        APIField("last_published_at"),
+        APIField("body"),
+        APIField("is_featured"),
+        APIField("fetch_parent")
     ]
 
     parent_page_types = ["home.BlogCategoryPage"]
+    subpage_types = []
+
+# ---------------------------- Robot Pages ----------------------------
+
+class RobotIndexPage(Page):
+    tag = StreamField(
+        [("tag", multi_lang_char(help_text="The tag for the page"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    hero_title = StreamField(
+        [("title", multi_lang_char(help_text="Hero title"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    hero_description = StreamField(
+        [("description", multi_lang_richtext(required=False, help_text="Hero description"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    hero_image = models.ForeignKey(
+        "wagtailimages.Image", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+
+    @property
+    def categories(self):
+        from .serializers import BlogCategoryPageSerializer
+        childs = self.get_children()
+        return BlogCategoryPageSerializer(childs, many=True).data
+
+    content_panels = Page.content_panels + [
+        FieldPanel("tag"),
+        FieldPanel("hero_title"),
+        FieldPanel("hero_description"),
+        FieldPanel("hero_image"),
+    ]
+
+    api_fields = BasePage.api_fields + [
+        APIField("categories"),
+        APIField("hero_image"),
+        APIField("tag"),
+        APIField("hero_title"),
+        APIField("hero_description"),
+    ]
+
+    parent_page_types = ["home.HomePage"]
+    subpage_types = ["home.RobotCategoryPage"]
+
+class RobotCategoryPage(BasePage):
+    cat_title = StreamField(
+        [("title", multi_lang_char(help_text="Category title"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    content_panels = Page.content_panels + [
+        FieldPanel("cat_title")
+    ]
+
+    api_fields = BasePage.api_fields + [
+        APIField("cat_title")
+    ]
+
+    parent_page_types = ["home.RobotIndexPage"]
+    subpage_types = ["home.RobotDetailPage"]
+
+class RobotDetailPage(BasePage):
+    robot_title = StreamField(
+        [("title", multi_lang_char(help_text="Robot title"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    short_description = StreamField(
+        [("description", multi_lang_richtext(required=False, help_text="Short description"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    tags = StreamField(
+        [("tags", multi_lang_char(required=False, help_text="Robot tags"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    thumbnail = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    body = StreamField(
+        [
+            ("title", TitleBlock()),
+            ("banner_image", BannerImageBlock()),
+            ("banner_video", BannerVideoBlock()),
+            ("carousel", ImageCarouselBlock()),
+            ("table", SpecificationBlock()),
+            ("richtext", RichtextBlock()),
+            ("faq", FaqBlock()),
+            ("media_text", MediaTextBlock())
+        ],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    author = models.ForeignKey(Author, null=True, blank=True, on_delete=models.SET_NULL)
+    is_featured = models.BooleanField(default=False)
+
+    @property
+    def fetch_parent(self):
+        parent = self.get_parent().specific
+
+        cat_title_value = {}
+        if parent.cat_title:
+            for block in parent.cat_title:
+                cat_title_value[block.block_type] = block.value
+
+        return {
+            "id": parent.id,
+            "title": cat_title_value,
+            "slug": parent.slug,
+        }
+
+    content_panels = Page.content_panels + [
+        MultiFieldPanel(
+            [
+                FieldPanel("robot_title"),
+                FieldPanel("short_description"),
+                FieldPanel("is_featured"),
+                FieldPanel("tags"),
+                FieldPanel("thumbnail")
+            ],
+            heading="Header"
+        ),
+        MultiFieldPanel([FieldPanel("author")], heading="Author"),
+        MultiFieldPanel([FieldPanel("body")], heading="Body")
+    ]
+
+    api_fields = BasePage.api_fields + [
+        APIField("robot_title"),
+        APIField("short_description"),
+        APIField("tags"),
+        APIField("thumbnail", serializer=ImageRenditionField({"original": "original|jpegquality-80|format-webp"})),
+        APIField("author", serializer=AuthorSerializer()),
+        APIField("last_published_at"),
+        APIField("body"),
+        APIField("is_featured"),
+        APIField("fetch_parent")
+    ]
+
+    parent_page_types = ["home.RobotCategoryPage"]
     subpage_types = []
 
 
@@ -279,11 +498,36 @@ class PublicPage(BasePage):
     subpage_types = []
 
 
+class RobotPage(BasePage):
+    body = StreamField(
+        [
+            ("page_header", PageHeaderBlock()),
+            ("title", TitleBlock()),
+            ("robots", RobotsFilterBlock()),
+            ("spacer", SpacerBlock()),
+        ],
+        null=True,
+        blank=True,
+    )
+
+    content_panels = Page.content_panels + [
+        MultiFieldPanel([FieldPanel("body")], heading="Body")
+    ]
+
+    api_fields = BasePage.api_fields + [
+        APIField("title"), APIField("body")
+    ]
+
+    parent_page_types = ["home.HomePage"]
+    subpage_types = []
+
+
 class AboutPage(BasePage):
     body = StreamField(
         [
             ("page_header", PageHeaderBlock()),
-            ("title", TitleBlock()), ("cards", CardsListBlock()),
+            ("title", TitleBlock()), ("cards", CardsListBlock()), 
+            ("how_it_works", HowItWorksBlock()), ("companies", CompaniesBlock()),
             ("stats", StatsBlock()), ("team", TeamBlock()), ("quote", QuoteBlock()),
             ("cta", CTABlock()), ("banner_video", BannerVideoBlock()),
             ("spacer", SpacerBlock()),
@@ -328,3 +572,113 @@ class ContactPage(BasePage):
 
     parent_page_types = ["home.HomePage"]
     subpage_types = []
+
+
+class BlogListPage(BasePage):
+    body = StreamField(
+        [   
+            ("page_header", PageHeaderBlock()), ("title", TitleBlock()),
+            ("blogs", BlogsListBlock()),
+            ("spacer", SpacerBlock()),
+        ],
+        null=True,
+        blank=True,
+        use_json_field=True,
+    )
+
+    content_panels = Page.content_panels + [
+        MultiFieldPanel([FieldPanel("body")], heading="Body")
+    ]
+
+    api_fields = BasePage.api_fields + [
+        APIField("title"), APIField("body")
+    ]
+
+    parent_page_types = ["home.HomePage"]
+    subpage_types = []
+
+class CompanyPage(BasePage):
+    parent_page_types = ["home.HomePage"]
+    subpage_types = ["home.CompanyDetailPage"]
+
+class CompanyDetailPage(BasePage):
+    company_name = StreamField(
+        [("name", multi_lang_char(help_text="Company name"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+    logo = models.TextField(
+        blank=True,
+        help_text="URL of the company logo"
+    )
+    banner = models.TextField(
+        blank=True,
+        help_text="URL of the company banner"
+    )
+
+
+    short_description = StreamField(
+        [("description", multi_lang_richtext(required=False, help_text="Short description"))],
+        use_json_field=True,
+        blank=True,
+        null=True,
+    )
+
+    cover_image = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+    logo_image = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+"
+    )
+
+    body = StreamField(
+        [
+            ("company_header", CompanyHeaderBlock()),
+            ("company_details", CompanyDetailsBlock()),
+            ("contacts", ContactListBlock()),
+            ("spacer", SpacerBlock()),
+        ],
+        null=True,
+        blank=True,
+        use_json_field=True,
+    )
+
+    content_panels = Page.content_panels + [
+        MultiFieldPanel(
+            [
+                FieldPanel("company_name"),
+                FieldPanel("short_description"),
+                FieldPanel("cover_image"),
+                FieldPanel("logo_image"),
+                FieldPanel("logo"),
+                FieldPanel("banner"),
+            ],
+            heading="Header"
+        ),
+        MultiFieldPanel([FieldPanel("body")], heading="Body")
+    ]
+
+    api_fields = BasePage.api_fields + [
+        APIField("company_name"),
+        APIField("logo"),
+        APIField("banner"),
+        APIField("short_description"),
+        APIField("cover_image", serializer=ImageRenditionField({"original": "original|jpegquality-80|format-webp"})),
+        APIField("logo_image", serializer=ImageRenditionField({"original": "original|jpegquality-80|format-webp"})),
+        APIField("body"),
+    ]
+
+    parent_page_types = [
+        "home.CompanyPage",
+    ]
+    subpage_types = []
+

@@ -5,6 +5,7 @@ PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BASE_DIR = os.path.dirname(PROJECT_DIR)
 
 INSTALLED_APPS = [
+    "daphne",
     "corsheaders",
     "home",
     "utility",
@@ -32,9 +33,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
-    'wagtail.api.v2',
-    'rest_framework',
-
+    "wagtail.api.v2",
+    "rest_framework",
+    "companies",
 ]
 
 USE_I18N = True
@@ -44,10 +45,10 @@ USE_TZ = True
 WAGTAIL_I18N_ENABLED = True
 
 LANGUAGES = [
-    ('en', "English"),
-    ('de-ch', "German (Switzerland)"),
-    ('fr-ch', "French (Switzerland)"),
-    ('it-ch', "Italian (Switzerland)"),
+    ("en", "English"),
+    ("de-ch", "German (Switzerland)"),
+    ("fr-ch", "French (Switzerland)"),
+    ("it-ch", "Italian (Switzerland)"),
 ]
 
 WAGTAIL_CONTENT_LANGUAGES = LANGUAGES
@@ -85,7 +86,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "robot-suisses.wsgi.application"
+# WSGI_APPLICATION = "robot-suisses.wsgi.application"
+ASGI_APPLICATION = "robot-suisses.asgi.application"
+
 
 DATABASES = {
     "default": {
@@ -165,3 +168,13 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
